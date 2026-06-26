@@ -1,8 +1,0 @@
-{
-  "rewrites": [
-    { "source": "/manager",     "destination": "/manager.html" },
-    { "source": "/abdelkader",  "destination": "/abdelkader.html" },
-    { "source": "/hamza",       "destination": "/hamza.html" },
-    { "source": "/",            "destination": "/index.html" }
-  ]
-}
