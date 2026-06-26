@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SWAM — RUN Online</title>
+<link rel="stylesheet" href="style.css">
+<style>
+body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);position:relative;overflow:hidden}
+.login-scene{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:2rem;width:100%;max-width:440px;padding:2rem}
+.login-logo-wrap{display:flex;flex-direction:column;align-items:center;gap:.75rem;animation:float 4s ease-in-out infinite}
+.login-tagline{font-size:11px;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;margin-top:.25rem}
+.login-card{background:rgba(255,255,255,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--bd);border-radius:var(--r2);padding:2rem;width:100%;box-shadow:0 20px 60px rgba(75,191,232,.1),0 4px 16px rgba(0,0,0,.06),inset 0 1px 0 rgba(255,255,255,.9)}
+.login-card h2{font-size:18px;font-weight:700;margin-bottom:.25rem;color:var(--text)}
+.login-card p{font-size:13px;color:var(--text3);margin-bottom:1.5rem}
+.login-sep{display:flex;align-items:center;gap:.625rem;margin:.75rem 0}
+.login-sep::before,.login-sep::after{content:'';flex:1;height:1px;background:var(--bd)}
+.login-sep span{font-size:11px;color:var(--text3)}
+.lbtn{display:flex;align-items:center;gap:.875rem;padding:.875rem 1rem;border:1px solid var(--bd);border-radius:var(--r);background:#fff;cursor:pointer;width:100%;margin-bottom:.5rem;transition:all .22s cubic-bezier(.22,1,.36,1);box-shadow:var(--shadow);text-decoration:none}
+.lbtn:last-child{margin-bottom:0}
+.lbtn:hover{border-color:rgba(75,191,232,.4);transform:translateY(-2px);box-shadow:var(--shadow-hover)}
+.lbtn:active{transform:scale(.98)}
+.lbtn-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.av-grad{background:var(--grad)}.av-dark{background:linear-gradient(135deg,#2D3748,#4A5568)}
+.lbtn-info{flex:1}
+.lbtn-name{font-size:13px;font-weight:600;color:var(--text);display:block}
+.lbtn-role{font-size:11px;color:var(--text3);display:block;margin-top:1px}
+.lbtn-arrow{color:var(--text3);transition:transform .2s;flex-shrink:0}
+.lbtn:hover .lbtn-arrow{transform:translateX(3px);color:var(--c2)}
+
+/* ── MODAL ── */
+.overlay{position:fixed;inset:0;background:rgba(15,17,23,.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:200;display:flex;align-items:center;justify-content:center;animation:fadeIn .2s ease}
+.modal{background:#fff;border-radius:var(--r2);padding:2rem;width:100%;max-width:380px;box-shadow:0 24px 64px rgba(0,0,0,.18);border:1px solid var(--bd);animation:scaleIn .2s cubic-bezier(.22,1,.36,1)}
+.modal-av{width:52px;height:52px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:#fff;margin:0 auto 1rem}
+.modal-av.dark{background:linear-gradient(135deg,#2D3748,#4A5568)}
+.modal h3{font-size:16px;font-weight:700;color:var(--text);margin-bottom:.25rem;text-align:center}
+.modal .sub{font-size:12px;color:var(--text3);margin-bottom:1.375rem;text-align:center}
+.pw-wrap{position:relative;margin-bottom:.75rem}
+.pw-wrap input{width:100%;border:1.5px solid var(--bd);border-radius:10px;padding:10px 42px 10px 12px;font-size:14px;color:var(--text);font-family:inherit;outline:none;transition:all .2s;background:#F4F6FB}
+.pw-wrap input:focus{border-color:rgba(75,191,232,.6);background:#fff;box-shadow:0 0 0 3px rgba(75,191,232,.12)}
+.pw-wrap label{display:block;font-size:11px;color:var(--text3);font-weight:500;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.eye-btn{position:absolute;right:10px;bottom:10px;background:none;border:none;cursor:pointer;color:var(--text3);padding:2px;display:flex}
+.eye-btn:hover{color:var(--text)}
+.err{font-size:12px;color:#DC2626;margin-bottom:.75rem;display:none;align-items:center;gap:.375rem;background:#FEF2F2;padding:8px 10px;border-radius:8px;border:1px solid #FCA5A5}
+.err.show{display:flex}
+.ok-msg{font-size:12px;color:#059669;margin-bottom:.75rem;display:none;align-items:center;gap:.375rem;background:#F0FDF4;padding:8px 10px;border-radius:8px;border:1px solid #6EE7B7}
+.ok-msg.show{display:flex}
+.modal-btns{display:flex;gap:.5rem;margin-top:1.125rem}
+.modal-btns .btn-grad{flex:1;justify-content:center;padding:10px}
+.modal-btns .btn-ghost{padding:10px 14px}
+.tab-row{display:flex;gap:2px;background:var(--bg3);border:1px solid var(--bd);border-radius:10px;padding:3px;margin-bottom:1.25rem}
+.tab-btn{flex:1;padding:7px;border-radius:7px;font-size:12px;cursor:pointer;color:var(--text3);border:none;background:none;font-family:inherit;transition:all .2s;font-weight:500}
+.tab-btn.active{background:#fff;color:var(--c2);box-shadow:var(--shadow);border:1px solid var(--bd)}
+.divider{height:1px;background:var(--bd);margin:.875rem 0}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.shake{animation:shake .35s ease}
+</style>
+</head>
+<body>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
+<div class="login-scene">
+  <div class="login-logo-wrap au">
+    <img src="data:image/png;base64,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" alt="SWAM Switch Al Maghrib" class="swam-logo-lg">
+    <div class="login-tagline">Gestion RUN Online</div>
+  </div>
+  <div class="login-card au d2">
+    <h2>Bienvenue</h2>
+    <p>Sélectionnez votre espace de travail pour continuer</p>
+    <button class="lbtn" onclick="openModal('manager')">
+      <div class="lbtn-av av-dark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+      <div class="lbtn-info"><span class="lbtn-name">Mohamed Amine BENNCAR</span><span class="lbtn-role">Vue globale · Administration</span></div>
+      <span class="lbtn-arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </button>
+    <div class="login-sep"><span>Équipe</span></div>
+    <button class="lbtn" onclick="openModal('ak')">
+      <div class="lbtn-av av-grad">AN</div>
+      <div class="lbtn-info"><span class="lbtn-name">Abdelkader NAIM</span><span class="lbtn-role">RUN Online SWAM</span></div>
+      <span class="lbtn-arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </button>
+    <button class="lbtn" onclick="openModal('hz')">
+      <div class="lbtn-av av-grad">HE</div>
+      <div class="lbtn-info"><span class="lbtn-name">Hamza EL HAYJ</span><span class="lbtn-role">RUN Online SWAM</span></div>
+      <span class="lbtn-arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </button>
+  </div>
+</div>
+
+<!-- ══ MODAL CONNEXION / CHANGER MDP ══ -->
+<div class="overlay hidden" id="overlay" onclick="closeOutside(event)">
+  <div class="modal" id="modal-box">
+    <div class="modal-av" id="m-av"></div>
+    <h3 id="m-title"></h3>
+    <div class="sub" id="m-sub"></div>
+
+    <!-- Onglets -->
+    <div class="tab-row">
+      <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        Connexion
+      </button>
+      <button class="tab-btn" id="tab-chpw" onclick="switchTab('chpw')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Changer le mot de passe
+      </button>
+    </div>
+
+    <!-- ── ONGLET CONNEXION ── -->
+    <div id="pane-login">
+      <div class="pw-wrap">
+        <label>Mot de passe</label>
+        <input type="password" id="pw-login" placeholder="Votre mot de passe…"
+          onkeydown="if(event.key==='Enter')tryLogin()">
+        <button class="eye-btn" type="button" onclick="toggleEye('pw-login',this)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <div class="err" id="err-login">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Mot de passe incorrect
+      </div>
+      <div class="modal-btns">
+        <button class="btn-ghost" onclick="closeModal()">Annuler</button>
+        <button class="btn-grad" onclick="tryLogin()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          Accéder
+        </button>
+      </div>
+    </div>
+
+    <!-- ── ONGLET CHANGER MDP ── -->
+    <div id="pane-chpw" class="hidden">
+      <div class="pw-wrap">
+        <label>Mot de passe actuel</label>
+        <input type="password" id="pw-current" placeholder="Mot de passe actuel…">
+        <button class="eye-btn" type="button" onclick="toggleEye('pw-current',this)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <div class="pw-wrap">
+        <label>Nouveau mot de passe</label>
+        <input type="password" id="pw-new" placeholder="Nouveau mot de passe…">
+        <button class="eye-btn" type="button" onclick="toggleEye('pw-new',this)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <div class="pw-wrap">
+        <label>Confirmer le nouveau mot de passe</label>
+        <input type="password" id="pw-confirm" placeholder="Confirmez le mot de passe…"
+          onkeydown="if(event.key==='Enter')tryChangePw()">
+        <button class="eye-btn" type="button" onclick="toggleEye('pw-confirm',this)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <div class="err" id="err-chpw">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="err-chpw-txt">Erreur</span>
+      </div>
+      <div class="ok-msg" id="ok-chpw">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Mot de passe modifié avec succès !
+      </div>
+      <div class="modal-btns">
+        <button class="btn-ghost" onclick="closeModal()">Annuler</button>
+        <button class="btn-grad" onclick="tryChangePw()" id="btn-savepw">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Enregistrer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SB  = 'https://qefpnyrumjacrznebtgf.supabase.co';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlZnBueXJ1bWphY3J6bmVidGdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0NTU3MzgsImV4cCI6MjA5ODAzMTczOH0.IbupYWa_yv8M7Ypzui97Fw3pc1VZt_ZEHE2RQvRz6S4';
+const H   = { 'Content-Type':'application/json','apikey':KEY,'Authorization':'Bearer '+KEY,'Prefer':'return=representation' };
+
+const PAGES = { manager:'manager.html', ak:'abdelkader.html', hz:'hamza.html' };
+const NAMES = { manager:'Mohamed Amine BENNCAR', ak:'Abdelkader NAIM', hz:'Hamza EL HAYJ' };
+const INITS = { manager:null, ak:'AN', hz:'HE' };
+
+/* Mots de passe de secours si Supabase inaccessible */
+const FALLBACK_PW = { manager:'Manager2024!', ak:'Abdelkader2024!', hz:'Hamza2024!' };
+
+let WHO = null;
+let PASSWORDS_CACHE = {};
+
+/* ── CHARGER LES MDP DEPUIS SUPABASE ── */
+async function loadPasswords() {
+  try {
+    const r = await fetch(SB + '/rest/v1/passwords?select=who,password', { headers: { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY } });
+    if (!r.ok) throw new Error();
+    const rows = await r.json();
+    rows.forEach(row => { PASSWORDS_CACHE[row.who] = row.password; });
+  } catch(e) {
+    /* Fallback sur les mots de passe locaux */
+    PASSWORDS_CACHE = { ...FALLBACK_PW };
+  }
+}
+
+/* ── MODAL ── */
+function openModal(who) {
+  WHO = who;
+  const av = document.getElementById('m-av');
+  if (who === 'manager') {
+    av.className = 'modal-av dark';
+    av.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>';
+  } else {
+    av.className = 'modal-av';
+    av.textContent = INITS[who];
+  }
+  document.getElementById('m-title').textContent = NAMES[who];
+  document.getElementById('m-sub').textContent   = 'Connectez-vous à votre espace';
+  switchTab('login');
+  resetFields();
+  document.getElementById('overlay').classList.remove('hidden');
+  setTimeout(() => document.getElementById('pw-login').focus(), 120);
+}
+
+function closeModal() {
+  document.getElementById('overlay').classList.add('hidden');
+  WHO = null;
+  resetFields();
+}
+
+function closeOutside(e) {
+  if (e.target === document.getElementById('overlay')) closeModal();
+}
+
+function resetFields() {
+  ['pw-login','pw-current','pw-new','pw-confirm'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('err-login').classList.remove('show');
+  document.getElementById('err-chpw').classList.remove('show');
+  document.getElementById('ok-chpw').classList.remove('show');
+}
+
+function switchTab(tab) {
+  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+  document.getElementById('tab-chpw').classList.toggle('active', tab === 'chpw');
+  document.getElementById('pane-login').classList.toggle('hidden', tab !== 'login');
+  document.getElementById('pane-chpw').classList.toggle('hidden', tab !== 'chpw');
+  document.getElementById('err-login').classList.remove('show');
+  document.getElementById('err-chpw').classList.remove('show');
+  document.getElementById('ok-chpw').classList.remove('show');
+  setTimeout(() => {
+    if (tab === 'login') document.getElementById('pw-login').focus();
+    else document.getElementById('pw-current').focus();
+  }, 80);
+}
+
+function toggleEye(inputId, btn) {
+  const inp = document.getElementById(inputId);
+  const show = inp.type === 'password';
+  inp.type = show ? 'text' : 'password';
+  btn.style.color = show ? 'var(--c2)' : 'var(--text3)';
+}
+
+/* ── CONNEXION ── */
+function tryLogin() {
+  const pw = document.getElementById('pw-login').value;
+  const stored = PASSWORDS_CACHE[WHO] || FALLBACK_PW[WHO];
+  if (pw === stored) {
+    sessionStorage.setItem('swam_auth', WHO);
+    window.location.href = PAGES[WHO];
+  } else {
+    const inp = document.getElementById('pw-login');
+    inp.classList.add('shake');
+    setTimeout(() => inp.classList.remove('shake'), 400);
+    document.getElementById('err-login').classList.add('show');
+    inp.select();
+  }
+}
+
+/* ── CHANGER MOT DE PASSE ── */
+async function tryChangePw() {
+  const current = document.getElementById('pw-current').value;
+  const newPw   = document.getElementById('pw-new').value;
+  const confirm = document.getElementById('pw-confirm').value;
+  const errEl   = document.getElementById('err-chpw');
+  const errTxt  = document.getElementById('err-chpw-txt');
+  const okEl    = document.getElementById('ok-chpw');
+  const btn     = document.getElementById('btn-savepw');
+
+  errEl.classList.remove('show');
+  okEl.classList.remove('show');
+
+  const stored = PASSWORDS_CACHE[WHO] || FALLBACK_PW[WHO];
+
+  if (current !== stored) {
+    errTxt.textContent = 'Mot de passe actuel incorrect';
+    errEl.classList.add('show');
+    document.getElementById('pw-current').classList.add('shake');
+    setTimeout(() => document.getElementById('pw-current').classList.remove('shake'), 400);
+    return;
+  }
+  if (newPw.length < 6) {
+    errTxt.textContent = 'Le nouveau mot de passe doit contenir au moins 6 caractères';
+    errEl.classList.add('show');
+    return;
+  }
+  if (newPw !== confirm) {
+    errTxt.textContent = 'Les mots de passe ne correspondent pas';
+    errEl.classList.add('show');
+    document.getElementById('pw-confirm').classList.add('shake');
+    setTimeout(() => document.getElementById('pw-confirm').classList.remove('shake'), 400);
+    return;
+  }
+
+  btn.disabled = true;
+  btn.style.opacity = '.6';
+
+  try {
+    const r = await fetch(SB + '/rest/v1/passwords?who=eq.' + WHO, {
+      method: 'PATCH',
+      headers: H,
+      body: JSON.stringify({ password: newPw })
+    });
+    if (!r.ok) throw new Error('Erreur Supabase');
+    PASSWORDS_CACHE[WHO] = newPw;
+    okEl.classList.add('show');
+    document.getElementById('pw-current').value = '';
+    document.getElementById('pw-new').value = '';
+    document.getElementById('pw-confirm').value = '';
+    setTimeout(() => { okEl.classList.remove('show'); switchTab('login'); }, 2500);
+  } catch(e) {
+    errTxt.textContent = 'Erreur de connexion. Réessayez.';
+    errEl.classList.add('show');
+  }
+
+  btn.disabled = false;
+  btn.style.opacity = '1';
+}
+
+/* ── INIT ── */
+loadPasswords();
+</script>
+</body>
+</html>
