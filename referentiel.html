@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SWAM — Référentiel</title>
+<link rel="stylesheet" href="style.css">
+<style>
+/* ── REFERENTIEL SPECIFIC ── */
+.ref-tabs{display:flex;gap:0;background:var(--bg2);border-bottom:2px solid var(--bd);margin-bottom:1.5rem}
+.ref-tab{padding:.75rem 1.5rem;font-size:13px;font-weight:500;cursor:pointer;color:var(--text3);border:none;background:none;font-family:inherit;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .18s;display:flex;align-items:center;gap:.5rem}
+.ref-tab.active{color:var(--c2);border-bottom-color:var(--c2)}
+.ref-tab:hover:not(.active){color:var(--text2)}
+
+/* ── ORGANISATIONS ── */
+.org-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:1rem}
+.org-card{background:#fff;border:1px solid var(--bd);border-radius:var(--r2);overflow:hidden;box-shadow:var(--shadow);transition:all .2s cubic-bezier(.22,1,.36,1);animation:fadeUp .35s ease both}
+.org-card:hover{box-shadow:var(--shadow-hover);border-color:rgba(75,191,232,.2)}
+.org-header{padding:1.125rem 1.25rem;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;gap:.75rem}
+.org-logo-wrap{width:52px;height:52px;border-radius:10px;border:1px solid var(--bd);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--bg3)}
+.org-logo-wrap img{width:100%;height:100%;object-fit:contain}
+.org-logo-placeholder{font-size:20px;font-weight:700;color:var(--text3)}
+.org-name{font-size:15px;font-weight:700;color:var(--text);flex:1}
+.org-actions{display:flex;gap:.3rem;flex-shrink:0}
+.org-contacts{padding:1rem 1.25rem;display:flex;flex-direction:column;gap:.625rem}
+.contact-row{display:flex;align-items:flex-start;gap:.75rem;padding:.625rem .875rem;background:var(--bg);border-radius:10px;border:1px solid var(--bd)}
+.contact-badge{flex-shrink:0;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.badge-p1{background:rgba(75,191,232,.12);color:#1A7A9E;border:1px solid rgba(75,191,232,.22)}
+.badge-p2{background:rgba(123,94,167,.12);color:#4A2D80;border:1px solid rgba(123,94,167,.22)}
+.badge-esc{background:rgba(245,158,11,.12);color:#92400E;border:1px solid rgba(245,158,11,.22)}
+.badge-dg{background:rgba(16,185,129,.12);color:#065F46;border:1px solid rgba(16,185,129,.22)}
+.contact-info{flex:1;min-width:0}
+.contact-name{font-size:13px;font-weight:600;color:var(--text);display:block}
+.contact-detail{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:.35rem;margin-top:2px;flex-wrap:wrap;gap:.35rem .75rem}
+.contact-detail a{color:var(--c2);text-decoration:none;font-size:11px}
+.contact-detail a:hover{text-decoration:underline}
+.contact-empty{font-size:12px;color:var(--text3);font-style:italic}
+
+/* ── MODAL ORG / CONTACT ── */
+.overlay{position:fixed;inset:0;background:rgba(15,17,23,.5);backdrop-filter:blur(6px);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem;animation:fadeIn .2s ease}
+.modal-lg{background:#fff;border-radius:var(--r2);padding:2rem;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.18);border:1px solid var(--bd);animation:scaleIn .2s cubic-bezier(.22,1,.36,1)}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.375rem}
+.modal-title{font-size:16px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:.5rem}
+.section-sep{height:1px;background:var(--bd);margin:1.25rem 0}
+.contact-section-title{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem}
+.contact-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.625rem;margin-bottom:.75rem}
+.logo-preview{width:64px;height:64px;border-radius:10px;border:1px solid var(--bd);overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--bg3);margin-bottom:.625rem}
+.logo-preview img{width:100%;height:100%;object-fit:contain}
+.logo-drop{border:2px dashed var(--bd2);border-radius:10px;padding:1rem;text-align:center;cursor:pointer;transition:all .2s;font-size:12px;color:var(--text3)}
+.logo-drop:hover{border-color:var(--c1);background:rgba(75,191,232,.04)}
+.logo-drop.drag{border-color:var(--c1);background:rgba(75,191,232,.08)}
+
+/* ── COMMUNICATIONS ── */
+.comm-layout{display:grid;grid-template-columns:260px 1fr;gap:1rem;min-height:500px}
+.comm-sidebar{background:#fff;border:1px solid var(--bd);border-radius:var(--r2);padding:.75rem;height:fit-content;box-shadow:var(--shadow)}
+.comm-sidebar-title{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;padding:.375rem .5rem;margin-bottom:.375rem}
+.sujet-item{display:flex;align-items:center;justify-content:space-between;padding:.625rem .75rem;border-radius:10px;cursor:pointer;transition:all .18s;font-size:13px;color:var(--text2);font-weight:400;gap:.5rem}
+.sujet-item:hover{background:var(--bg3)}
+.sujet-item.active{background:linear-gradient(90deg,rgba(75,191,232,.1),transparent);color:var(--c2);font-weight:500}
+.sujet-item .s-cnt{font-size:10px;color:var(--text3);background:var(--bg3);padding:2px 6px;border-radius:20px;flex-shrink:0}
+.sujet-item.active .s-cnt{background:rgba(75,191,232,.15);color:var(--c1)}
+.comm-content{display:flex;flex-direction:column;gap:.75rem}
+.template-card{background:#fff;border:1px solid var(--bd);border-radius:var(--r2);overflow:hidden;box-shadow:var(--shadow);animation:fadeUp .3s ease both}
+.template-header{padding:.875rem 1.125rem;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;transition:background .15s}
+.template-header:hover{background:var(--bg)}
+.template-title{font-size:14px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:.5rem}
+.template-title-icon{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,rgba(75,191,232,.15),rgba(139,58,143,.15));display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.template-body{padding:1.125rem;display:none}
+.template-body.open{display:block}
+.mail-field{margin-bottom:.875rem}
+.mail-field-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;display:flex;align-items:center;gap:.375rem}
+.mail-field-val{font-size:13px;color:var(--text2);background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:.625rem .875rem;line-height:1.5;position:relative}
+.mail-field-val.corps{white-space:pre-wrap;font-family:inherit;min-height:80px}
+.copy-btn{position:absolute;top:6px;right:6px;background:#fff;border:1px solid var(--bd);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;color:var(--text3);font-family:inherit;display:flex;align-items:center;gap:.3rem;transition:all .15s}
+.copy-btn:hover{border-color:var(--c1);color:var(--c1)}
+.copy-btn.copied{border-color:#10B981;color:#10B981;background:#F0FDF4}
+.template-actions{display:flex;justify-content:flex-end;gap:.35rem;margin-top:.875rem;padding-top:.875rem;border-top:1px solid var(--bd)}
+.empty-comm{text-align:center;padding:3rem;color:var(--text3);background:#fff;border:1.5px dashed var(--bd);border-radius:var(--r2)}
+
+/* ── FORM TEXTAREA ── */
+.field-textarea{width:100%;background:#F4F6FB;border:1.5px solid var(--bd);border-radius:10px;padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit;outline:none;transition:all .2s;resize:vertical;min-height:120px;line-height:1.6}
+.field-textarea:focus{border-color:rgba(75,191,232,.6);background:#fff;box-shadow:0 0 0 3px rgba(75,191,232,.12)}
+
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="toast-container"><div class="toast" id="toast"></div></div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo"><a href="index.html"><img src="data:image/png;base64,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" alt="SWAM" class="swam-logo"></a></div>
+    <div class="topbar-div"></div>
+    <div class="topbar-title"><strong>Référentiel SWAM Online</strong>Accès public</div>
+  </div>
+  <div class="topbar-right">
+    <div class="sb-pill" onclick="pingDB()">
+      <div class="sb-dot chk" id="sb-dot"></div>
+      <span id="sb-lbl" style="font-size:11px">Supabase</span>
+      <span id="sb-ms" style="color:var(--text3);font-size:11px"></span>
+    </div>
+    <a href="index.html" class="btn-logout">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Portail
+    </a>
+  </div>
+</div>
+
+<!-- APP BODY -->
+<div class="app-body">
+  <div class="sidebar" id="sidebar">
+    <button class="sb-toggle" onclick="toggleSB()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="14" y1="9" x2="17" y2="9"/><line x1="14" y1="12" x2="17" y2="12"/><line x1="14" y1="15" x2="17" y2="15"/></svg>
+    </button>
+    <div class="nav-section">Référentiel</div>
+    <button class="nav-item active" id="nav-orgs" onclick="showSection('orgs')">
+      <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+      <span class="nav-label">Organisations</span>
+    </button>
+    <button class="nav-item" id="nav-comms" onclick="showSection('comms')">
+      <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
+      <span class="nav-label">Communications</span>
+    </button>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ ORGANISATIONS ══ -->
+    <div id="sec-orgs">
+      <div class="page-hdr au">
+        <div class="page-hdr-top">
+          <div>
+            <div class="page-title">Organisations</div>
+            <div class="page-sub">Annuaire des contacts par organisation SWAM Online</div>
+          </div>
+          <button class="btn-grad" onclick="openOrgModal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Ajouter une organisation
+          </button>
+        </div>
+        <div class="grad-accent"></div>
+      </div>
+      <div id="org-grid" class="org-grid"></div>
+    </div>
+
+    <!-- ══ COMMUNICATIONS ══ -->
+    <div id="sec-comms" class="hidden">
+      <div class="page-hdr au">
+        <div class="page-hdr-top">
+          <div>
+            <div class="page-title">Communications</div>
+            <div class="page-sub">Templates de communication par sujet</div>
+          </div>
+          <button class="btn-grad" onclick="openSujetModal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nouveau sujet
+          </button>
+        </div>
+        <div class="grad-accent"></div>
+      </div>
+      <div class="comm-layout">
+        <div class="comm-sidebar">
+          <div class="comm-sidebar-title">Sujets</div>
+          <div id="sujet-list"></div>
+          <div style="height:1px;background:var(--bd);margin:.625rem 0"></div>
+          <button class="btn-ghost" style="width:100%;justify-content:center;font-size:12px" onclick="openSujetModal()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Ajouter un sujet
+          </button>
+        </div>
+        <div id="comm-content" class="comm-content"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL ORGANISATION ══ -->
+<div class="overlay hidden" id="modal-org" onclick="closeModalOutside(event,'modal-org')">
+  <div class="modal-lg">
+    <div class="modal-hdr">
+      <div class="modal-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--c1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span id="org-modal-title">Nouvelle organisation</span>
+      </div>
+      <button class="btn-ghost" onclick="closeOrgModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- Nom + Logo -->
+    <div class="form-grid g2f" style="margin-bottom:.75rem">
+      <div>
+        <label class="field-label">Nom de l'organisation *</label>
+        <input type="text" class="field-input" id="org-nom" placeholder="Ex: Attijariwafa Bank">
+      </div>
+      <div>
+        <label class="field-label">Logo (URL ou upload)</label>
+        <input type="url" class="field-input" id="org-logo-url" placeholder="https://…" oninput="previewLogo()">
+        <div class="logo-preview" id="logo-preview" style="margin-top:.5rem;display:none">
+          <img id="logo-preview-img" src="" alt="">
+        </div>
+      </div>
+    </div>
+
+    <div class="section-sep"></div>
+
+    <!-- Contact Principal 1 -->
+    <div class="contact-section-title">
+      <span style="width:10px;height:10px;border-radius:50%;background:rgba(75,191,232,.8);display:inline-block"></span>
+      Contact Principal 1
+    </div>
+    <div class="contact-form-grid">
+      <div><label class="field-label">Prénom</label><input type="text" class="field-input" id="p1-prenom" placeholder="Prénom"></div>
+      <div><label class="field-label">Nom</label><input type="text" class="field-input" id="p1-nom" placeholder="Nom"></div>
+      <div><label class="field-label">Email</label><input type="email" class="field-input" id="p1-email" placeholder="email@exemple.com"></div>
+      <div><label class="field-label">Téléphone</label><input type="tel" class="field-input" id="p1-tel" placeholder="+212 6xx xxx xxx"></div>
+    </div>
+
+    <div class="section-sep"></div>
+
+    <!-- Contact Principal 2 -->
+    <div class="contact-section-title">
+      <span style="width:10px;height:10px;border-radius:50%;background:rgba(123,94,167,.8);display:inline-block"></span>
+      Contact Principal 2
+    </div>
+    <div class="contact-form-grid">
+      <div><label class="field-label">Prénom</label><input type="text" class="field-input" id="p2-prenom" placeholder="Prénom"></div>
+      <div><label class="field-label">Nom</label><input type="text" class="field-input" id="p2-nom" placeholder="Nom"></div>
+      <div><label class="field-label">Email</label><input type="email" class="field-input" id="p2-email" placeholder="email@exemple.com"></div>
+      <div><label class="field-label">Téléphone</label><input type="tel" class="field-input" id="p2-tel" placeholder="+212 6xx xxx xxx"></div>
+    </div>
+
+    <div class="section-sep"></div>
+
+    <!-- Contact Escalade -->
+    <div class="contact-section-title">
+      <span style="width:10px;height:10px;border-radius:50%;background:rgba(245,158,11,.8);display:inline-block"></span>
+      Contact d'Escalade
+    </div>
+    <div class="contact-form-grid">
+      <div><label class="field-label">Prénom</label><input type="text" class="field-input" id="esc-prenom" placeholder="Prénom"></div>
+      <div><label class="field-label">Nom</label><input type="text" class="field-input" id="esc-nom" placeholder="Nom"></div>
+      <div><label class="field-label">Email</label><input type="email" class="field-input" id="esc-email" placeholder="email@exemple.com"></div>
+      <div><label class="field-label">Téléphone</label><input type="tel" class="field-input" id="esc-tel" placeholder="+212 6xx xxx xxx"></div>
+    </div>
+
+    <div class="section-sep"></div>
+
+    <!-- DG -->
+    <div class="contact-section-title">
+      <span style="width:10px;height:10px;border-radius:50%;background:rgba(16,185,129,.8);display:inline-block"></span>
+      Directeur Général
+    </div>
+    <div class="contact-form-grid">
+      <div><label class="field-label">Prénom</label><input type="text" class="field-input" id="dg-prenom" placeholder="Prénom"></div>
+      <div><label class="field-label">Nom</label><input type="text" class="field-input" id="dg-nom" placeholder="Nom"></div>
+      <div><label class="field-label">Email</label><input type="email" class="field-input" id="dg-email" placeholder="email@exemple.com"></div>
+      <div><label class="field-label">Téléphone</label><input type="tel" class="field-input" id="dg-tel" placeholder="+212 6xx xxx xxx"></div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--bd)">
+      <button class="btn-ghost" onclick="closeOrgModal()">Annuler</button>
+      <button class="btn-grad" onclick="saveOrg()" id="btn-save-org">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Enregistrer
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL SUJET COMMUNICATION ══ -->
+<div class="overlay hidden" id="modal-sujet" onclick="closeModalOutside(event,'modal-sujet')">
+  <div class="modal-lg" style="max-width:440px">
+    <div class="modal-hdr">
+      <div class="modal-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--c1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <span id="sujet-modal-title">Nouveau sujet</span>
+      </div>
+      <button class="btn-ghost" onclick="closeSujetModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div style="margin-bottom:.75rem"><label class="field-label">Titre du sujet *</label><input type="text" class="field-input" id="sujet-titre" placeholder="Ex: Incident critique"></div>
+    <div><label class="field-label">Description</label><input type="text" class="field-input" id="sujet-desc" placeholder="Description courte…"></div>
+    <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-top:1.25rem">
+      <button class="btn-ghost" onclick="closeSujetModal()">Annuler</button>
+      <button class="btn-grad" onclick="saveSujet()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Créer
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL TEMPLATE ══ -->
+<div class="overlay hidden" id="modal-tpl" onclick="closeModalOutside(event,'modal-tpl')">
+  <div class="modal-lg" style="max-width:600px">
+    <div class="modal-hdr">
+      <div class="modal-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--c1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+        <span id="tpl-modal-title">Nouveau template</span>
+      </div>
+      <button class="btn-ghost" onclick="closeTplModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div style="margin-bottom:.75rem"><label class="field-label">Titre du template *</label><input type="text" class="field-input" id="tpl-titre" placeholder="Ex: Notification d'incident P1"></div>
+    <div style="margin-bottom:.75rem"><label class="field-label">Destinataires</label><input type="text" class="field-input" id="tpl-dest" placeholder="Ex: responsable@banque.ma; dsi@banque.ma"></div>
+    <div style="margin-bottom:.75rem"><label class="field-label">Objet du mail</label><input type="text" class="field-input" id="tpl-objet" placeholder="Ex: [SWAM] Incident critique — {{date}}"></div>
+    <div><label class="field-label">Corps du mail</label><textarea class="field-textarea" id="tpl-corps" placeholder="Bonjour,&#10;&#10;Nous vous informons d'un incident…&#10;&#10;Cordialement,&#10;L'équipe SWAM Online"></textarea></div>
+    <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-top:1.25rem">
+      <button class="btn-ghost" onclick="closeTplModal()">Annuler</button>
+      <button class="btn-grad" onclick="saveTpl()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Enregistrer
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="icons.js"></script>
+<script src="app.js"></script>
+<script>
+/* ── STATE ── */
+let ORGS=[], SUJETS=[], TEMPLATES={};
+let editingOrgId=null, editingSujetId=null, editingTplId=null, activeSujetId=null;
+let SB_OPEN=true;
+
+const ROLE_LABELS={principal_1:'Contact Principal 1',principal_2:'Contact Principal 2',escalade:'Escalade',dg:'Directeur Général'};
+const ROLE_BADGES={principal_1:'badge-p1',principal_2:'badge-p2',escalade:'badge-esc',dg:'badge-dg'};
+const ROLE_BADGES_SHORT={principal_1:'P1',principal_2:'P2',escalade:'ESC',dg:'DG'};
+
+/* ── INIT ── */
+window.addEventListener('DOMContentLoaded', async () => {
+  pingDB();
+  await Promise.all([loadOrgs(), loadSujets()]);
+});
+
+function toggleSB(){SB_OPEN=!SB_OPEN;document.getElementById('sidebar').classList.toggle('collapsed',!SB_OPEN);}
+
+/* ── NAVIGATION ── */
+function showSection(s){
+  ['orgs','comms'].forEach(x=>{
+    document.getElementById('sec-'+x).classList.toggle('hidden',x!==s);
+    document.getElementById('nav-'+x).classList.toggle('active',x===s);
+  });
+}
+
+/* ══════════════════════════════════
+   ORGANISATIONS
+══════════════════════════════════ */
+async function loadOrgs(){
+  try{
+    ORGS=await GET('organisations','?order=ordre.asc,created_at.asc&select=*,contacts(*)');
+    renderOrgs();
+  }catch(e){document.getElementById('org-grid').innerHTML='<div class="empty-state"><div class="empty-title">Erreur de chargement</div></div>';}
+}
+
+function renderOrgs(){
+  const el=document.getElementById('org-grid');
+  if(!ORGS.length){
+    el.innerHTML='<div class="empty-state" style="grid-column:1/-1"><i class="empty-icon">🏢</i><div class="empty-title">Aucune organisation</div><div class="empty-sub">Cliquez sur "Ajouter une organisation" pour commencer</div></div>';
+    return;
+  }
+  el.innerHTML=ORGS.map((org,i)=>{
+    const contacts=org.contacts||[];
+    const getC=role=>contacts.find(c=>c.role===role);
+    const roles=['principal_1','principal_2','escalade','dg'];
+    return `<div class="org-card" style="animation-delay:${i*.06}s">
+      <div class="org-header">
+        <div class="org-logo-wrap">
+          ${org.logo_url?'<img src="'+esc(org.logo_url)+'" alt="'+esc(org.nom)+'">':'<span class="org-logo-placeholder">'+esc(org.nom.charAt(0))+'</span>'}
+        </div>
+        <div class="org-name">${esc(org.nom)}</div>
+        <div class="org-actions">
+          <button class="btn-ghost" onclick="openOrgModal('${org.id}')" title="Modifier">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="btn-ghost danger" onclick="deleteOrg('${org.id}')" title="Supprimer">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="org-contacts">
+        ${roles.map(role=>{
+          const c=getC(role);
+          if(!c&&!['principal_1'].includes(role)) return '';
+          return '<div class="contact-row">'+
+            '<span class="contact-badge '+ROLE_BADGES[role]+'">'+ROLE_BADGES_SHORT[role]+'</span>'+
+            '<div class="contact-info">'+
+              (c&&(c.prenom||c.nom)
+                ? '<span class="contact-name">'+esc((c.prenom||'')+' '+(c.nom||''))+'</span>'
+                : '<span class="contact-empty">Non renseigné</span>')+
+              (c ? '<div class="contact-detail">'+
+                (c.email?'<a href="mailto:'+esc(c.email)+'">'+esc(c.email)+'</a>':'')+
+                (c.telephone?'<a href="tel:'+esc(c.telephone)+'">'+esc(c.telephone)+'</a>':'')+
+              '</div>' : '')+
+            '</div>'+
+          '</div>';
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── Modal Organisation ── */
+function openOrgModal(orgId=null){
+  editingOrgId=orgId;
+  const el=document.getElementById('modal-org');
+  const fields=['org-nom','org-logo-url','p1-prenom','p1-nom','p1-email','p1-tel','p2-prenom','p2-nom','p2-email','p2-tel','esc-prenom','esc-nom','esc-email','esc-tel','dg-prenom','dg-nom','dg-email','dg-tel'];
+  fields.forEach(id=>{const f=document.getElementById(id);if(f)f.value='';});
+  document.getElementById('logo-preview').style.display='none';
+
+  if(orgId){
+    document.getElementById('org-modal-title').textContent='Modifier l\'organisation';
+    const org=ORGS.find(o=>o.id===orgId);
+    if(org){
+      document.getElementById('org-nom').value=org.nom||'';
+      document.getElementById('org-logo-url').value=org.logo_url||'';
+      if(org.logo_url){document.getElementById('logo-preview-img').src=org.logo_url;document.getElementById('logo-preview').style.display='flex';}
+      const contacts=org.contacts||[];
+      const fill=(role,pfx)=>{
+        const c=contacts.find(x=>x.role===role);
+        if(c){
+          document.getElementById(pfx+'-prenom').value=c.prenom||'';
+          document.getElementById(pfx+'-nom').value=c.nom||'';
+          document.getElementById(pfx+'-email').value=c.email||'';
+          document.getElementById(pfx+'-tel').value=c.telephone||'';
+        }
+      };
+      fill('principal_1','p1');fill('principal_2','p2');fill('escalade','esc');fill('dg','dg');
+    }
+  } else {
+    document.getElementById('org-modal-title').textContent='Nouvelle organisation';
+  }
+  el.classList.remove('hidden');
+  setTimeout(()=>document.getElementById('org-nom').focus(),100);
+}
+
+function closeOrgModal(){document.getElementById('modal-org').classList.add('hidden');editingOrgId=null;}
+
+function previewLogo(){
+  const url=document.getElementById('org-logo-url').value.trim();
+  const prev=document.getElementById('logo-preview');
+  if(url){document.getElementById('logo-preview-img').src=url;prev.style.display='flex';}
+  else{prev.style.display='none';}
+}
+
+async function saveOrg(){
+  const nom=document.getElementById('org-nom').value.trim();
+  if(!nom){toast('Le nom est requis','err');return;}
+  const btn=document.getElementById('btn-save-org');btn.disabled=true;
+  const logo_url=document.getElementById('org-logo-url').value.trim()||null;
+
+  const contactData=[
+    {role:'principal_1',pfx:'p1'},{role:'principal_2',pfx:'p2'},
+    {role:'escalade',pfx:'esc'},{role:'dg',pfx:'dg'}
+  ];
+
+  try{
+    let orgId=editingOrgId;
+    if(orgId){
+      await PATCH('organisations',{nom,logo_url},'?id=eq.'+orgId);
+      await DEL('contacts','?organisation_id=eq.'+orgId);
+    } else {
+      orgId=uid();
+      await POST('organisations',{id:orgId,nom,logo_url});
+    }
+    for(const{role,pfx}of contactData){
+      const prenom=document.getElementById(pfx+'-prenom').value.trim();
+      const nom2=document.getElementById(pfx+'-nom').value.trim();
+      const email=document.getElementById(pfx+'-email').value.trim();
+      const telephone=document.getElementById(pfx+'-tel').value.trim();
+      if(prenom||nom2||email||telephone){
+        await POST('contacts',{id:uid(),organisation_id:orgId,role,prenom,nom:nom2,email:email||null,telephone:telephone||null});
+      }
+    }
+    toast(editingOrgId?'Organisation modifiée':'Organisation créée');
+    closeOrgModal();
+    await loadOrgs();
+  }catch(e){toast('Erreur: '+e.message,'err');}
+  btn.disabled=false;
+}
+
+async function deleteOrg(id){
+  if(!confirm('Supprimer cette organisation et tous ses contacts ?'))return;
+  try{await DEL('organisations','?id=eq.'+id);toast('Organisation supprimée');await loadOrgs();}
+  catch(e){toast('Erreur','err');}
+}
+
+/* ══════════════════════════════════
+   COMMUNICATIONS
+══════════════════════════════════ */
+async function loadSujets(){
+  try{
+    SUJETS=await GET('comm_sujets','?order=ordre.asc,created_at.asc&select=*,comm_templates(id)');
+    renderSujetList();
+    if(SUJETS.length&&!activeSujetId){selectSujet(SUJETS[0].id);}
+    else if(activeSujetId){renderTemplates(activeSujetId);}
+  }catch(e){}
+}
+
+function renderSujetList(){
+  const el=document.getElementById('sujet-list');
+  if(!SUJETS.length){el.innerHTML='<div style="font-size:12px;color:var(--text3);padding:.5rem">Aucun sujet</div>';return;}
+  el.innerHTML=SUJETS.map(s=>`
+    <div class="sujet-item ${s.id===activeSujetId?'active':''}" onclick="selectSujet('${s.id}')">
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(s.titre)}</span>
+      <span class="s-cnt">${(s.comm_templates||[]).length}</span>
+      <button class="btn-ghost danger" style="padding:3px 6px;min-width:0" onclick="event.stopPropagation();deleteSujet('${s.id}')">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+      </button>
+    </div>`).join('');
+}
+
+async function selectSujet(id){
+  activeSujetId=id;
+  renderSujetList();
+  await renderTemplates(id);
+}
+
+async function renderTemplates(sujetId){
+  const el=document.getElementById('comm-content');
+  el.innerHTML='<div class="loading-row"><div class="spinner"></div> Chargement…</div>';
+  try{
+    const tpls=await GET('comm_templates','?sujet_id=eq.'+sujetId+'&order=ordre.asc,created_at.asc');
+    TEMPLATES[sujetId]=tpls;
+    const sujet=SUJETS.find(s=>s.id===sujetId);
+    if(!tpls.length){
+      el.innerHTML=`<div class="empty-comm">
+        <div style="font-size:28px;margin-bottom:.75rem;opacity:.25">✉️</div>
+        <div class="empty-title">Aucun template pour "${esc(sujet?.titre||'')}"</div>
+        <div class="empty-sub" style="margin-bottom:1rem">Créez votre premier template de communication</div>
+        <button class="btn-grad" onclick="openTplModal('${sujetId}')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Ajouter un template
+        </button>
+      </div>`;
+      return;
+    }
+    el.innerHTML=`
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+        <div style="font-size:13px;font-weight:600;color:var(--text)">${esc(sujet?.titre||'')} <span class="count-pill">${tpls.length} template${tpls.length>1?'s':''}</span></div>
+        <button class="btn-grad" onclick="openTplModal('${sujetId}')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Ajouter un template
+        </button>
+      </div>
+      ${tpls.map((t,i)=>renderTemplateCard(t,i)).join('')}
+    `;
+  }catch(e){el.innerHTML='<div class="empty-comm"><div class="empty-title">Erreur de chargement</div></div>';}
+}
+
+function renderTemplateCard(t,i){
+  return `<div class="template-card" style="animation-delay:${i*.05}s">
+    <div class="template-header" onclick="toggleTpl('${t.id}')">
+      <div class="template-title">
+        <div class="template-title-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--c1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        ${esc(t.titre)}
+      </div>
+      <div style="display:flex;align-items:center;gap:.35rem">
+        <svg id="chevron-${t.id}" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition:transform .2s;flex-shrink:0"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </div>
+    <div class="template-body" id="tbody-${t.id}">
+      ${t.destinataires?'<div class="mail-field"><div class="mail-field-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Destinataires</div><div class="mail-field-val">'+esc(t.destinataires)+'</div></div>':''}
+      ${t.objet?'<div class="mail-field"><div class="mail-field-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg> Objet</div><div class="mail-field-val" style="position:relative">'+esc(t.objet)+'<button class="copy-btn" onclick="copyText(event,\''+encodeURIComponent(t.objet)+'\',this)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copier</button></div></div>':''}
+      ${t.corps?'<div class="mail-field"><div class="mail-field-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> Corps du mail</div><div class="mail-field-val corps" style="position:relative">'+esc(t.corps)+'<button class="copy-btn" onclick="copyText(event,\''+encodeURIComponent(t.corps)+'\',this)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copier</button></div></div>':''}
+      <div class="template-actions">
+        <button class="btn-ghost" onclick="openTplModal('${t.sujet_id}','${t.id}')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Modifier
+        </button>
+        <button class="btn-ghost danger" onclick="deleteTpl('${t.id}','${t.sujet_id}')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          Supprimer
+        </button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleTpl(id){
+  const body=document.getElementById('tbody-'+id);
+  const chevron=document.getElementById('chevron-'+id);
+  const open=body.classList.toggle('open');
+  chevron.style.transform=open?'rotate(180deg)':'rotate(0deg)';
+}
+
+function copyText(e,encoded,btn){
+  e.stopPropagation();
+  navigator.clipboard.writeText(decodeURIComponent(encoded)).then(()=>{
+    btn.classList.add('copied');btn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copié !';
+    setTimeout(()=>{btn.classList.remove('copied');btn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copier';},2000);
+  });
+}
+
+/* ── Modal Sujet ── */
+function openSujetModal(sujetId=null){
+  editingSujetId=sujetId;
+  document.getElementById('sujet-modal-title').textContent=sujetId?'Modifier le sujet':'Nouveau sujet';
+  document.getElementById('sujet-titre').value='';
+  document.getElementById('sujet-desc').value='';
+  if(sujetId){const s=SUJETS.find(x=>x.id===sujetId);if(s){document.getElementById('sujet-titre').value=s.titre;document.getElementById('sujet-desc').value=s.description||'';}}
+  document.getElementById('modal-sujet').classList.remove('hidden');
+  setTimeout(()=>document.getElementById('sujet-titre').focus(),100);
+}
+function closeSujetModal(){document.getElementById('modal-sujet').classList.add('hidden');}
+async function saveSujet(){
+  const titre=document.getElementById('sujet-titre').value.trim();
+  const description=document.getElementById('sujet-desc').value.trim()||null;
+  if(!titre){toast('Le titre est requis','err');return;}
+  try{
+    if(editingSujetId){await PATCH('comm_sujets',{titre,description},'?id=eq.'+editingSujetId);toast('Sujet modifié');}
+    else{await POST('comm_sujets',{id:uid(),titre,description});toast('Sujet créé');}
+    closeSujetModal();await loadSujets();
+  }catch(e){toast('Erreur','err');}
+}
+async function deleteSujet(id){
+  if(!confirm('Supprimer ce sujet et tous ses templates ?'))return;
+  try{await DEL('comm_sujets','?id=eq.'+id);if(activeSujetId===id)activeSujetId=null;toast('Sujet supprimé');await loadSujets();}
+  catch(e){toast('Erreur','err');}
+}
+
+/* ── Modal Template ── */
+let currentTplSujetId=null;
+function openTplModal(sujetId,tplId=null){
+  currentTplSujetId=sujetId;editingTplId=tplId;
+  document.getElementById('tpl-modal-title').textContent=tplId?'Modifier le template':'Nouveau template';
+  ['tpl-titre','tpl-dest','tpl-objet','tpl-corps'].forEach(id=>document.getElementById(id).value='');
+  if(tplId){
+    const tpls=TEMPLATES[sujetId]||[];
+    const t=tpls.find(x=>x.id===tplId);
+    if(t){
+      document.getElementById('tpl-titre').value=t.titre||'';
+      document.getElementById('tpl-dest').value=t.destinataires||'';
+      document.getElementById('tpl-objet').value=t.objet||'';
+      document.getElementById('tpl-corps').value=t.corps||'';
+    }
+  }
+  document.getElementById('modal-tpl').classList.remove('hidden');
+  setTimeout(()=>document.getElementById('tpl-titre').focus(),100);
+}
+function closeTplModal(){document.getElementById('modal-tpl').classList.add('hidden');}
+async function saveTpl(){
+  const titre=document.getElementById('tpl-titre').value.trim();
+  if(!titre){toast('Le titre est requis','err');return;}
+  const body={
+    titre,
+    destinataires:document.getElementById('tpl-dest').value.trim()||null,
+    objet:document.getElementById('tpl-objet').value.trim()||null,
+    corps:document.getElementById('tpl-corps').value.trim()||null
+  };
+  try{
+    if(editingTplId){await PATCH('comm_templates',body,'?id=eq.'+editingTplId);toast('Template modifié');}
+    else{await POST('comm_templates',{id:uid(),sujet_id:currentTplSujetId,...body});toast('Template créé');}
+    closeTplModal();await loadSujets();if(currentTplSujetId)await renderTemplates(currentTplSujetId);
+  }catch(e){toast('Erreur','err');}
+}
+async function deleteTpl(id,sujetId){
+  if(!confirm('Supprimer ce template ?'))return;
+  try{await DEL('comm_templates','?id=eq.'+id);toast('Supprimé');await loadSujets();await renderTemplates(sujetId);}
+  catch(e){toast('Erreur','err');}
+}
+
+/* ── MODAL CLOSE OUTSIDE ── */
+function closeModalOutside(e,id){if(e.target===document.getElementById(id))document.getElementById(id).classList.add('hidden');}
+</script>
+</body>
+</html>
